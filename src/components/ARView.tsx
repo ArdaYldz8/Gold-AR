@@ -99,13 +99,13 @@ export const ARView: React.FC<ARViewProps> = ({ product, onBack }) => {
         // Ring positioning from hand tracking
         if (product.type === 'ring' && handTracking.hands.length > 0) {
             const hand = handTracking.hands[0];
-            // Use RING finger landmarks (13=MCP, 14=PIP) instead of index finger
-            const ringFingerBase = hand.landmarks[13]; // RING_FINGER_MCP
+            // Use RING finger landmarks (14=PIP, 15=DIP) - middle of finger where rings are worn
             const ringFingerPip = hand.landmarks[14];  // RING_FINGER_PIP
+            const ringFingerDip = hand.landmarks[15];  // RING_FINGER_DIP
 
-            // Use base and PIP joint for ring positioning
-            const p1 = { x: ringFingerBase.x, y: ringFingerBase.y };
-            const p2 = { x: ringFingerPip.x, y: ringFingerPip.y };
+            // Use PIP and DIP joint for ring positioning (middle of finger)
+            const p1 = { x: ringFingerPip.x, y: ringFingerPip.y };
+            const p2 = { x: ringFingerDip.x, y: ringFingerDip.y };
 
             const transform = computeTransform(p1, p2);
 
@@ -120,7 +120,7 @@ export const ARView: React.FC<ARViewProps> = ({ product, onBack }) => {
             setRingTransform({
                 x: px + product.offsetX,
                 y: py + product.offsetY,
-                scale: transform.scale * containerWidth * product.baseScale * 0.15,
+                scale: transform.scale * containerWidth * product.baseScale * 0.6, // Much bigger!
                 rotation: -radToDeg(transform.rotationRad), // Negate for mirrored view
                 visible: true,
             });
