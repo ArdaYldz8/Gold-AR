@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FaceMesh } from '@mediapipe/face_mesh';
+import * as mpFaceMesh from '@mediapipe/face_mesh';
 import type { Results as FaceMeshResults, NormalizedLandmarkList } from '@mediapipe/face_mesh';
 import { Camera } from '@mediapipe/camera_utils';
 
@@ -84,8 +84,15 @@ export function useFaceMesh(): UseFaceMeshResult {
             try {
                 setIsLoading(true);
 
+                console.log('MediaPipe FaceMesh Import:', mpFaceMesh);
+
                 // Create MediaPipe Face Mesh instance
-                const faceMeshInstance = new FaceMesh({
+                const FaceMeshClass = mpFaceMesh.FaceMesh || (mpFaceMesh as any).default?.FaceMesh || (window as any).FaceMesh;
+                if (!FaceMeshClass) {
+                    throw new Error('FaceMesh class not found in import');
+                }
+
+                const faceMeshInstance = new FaceMeshClass({
                     locateFile: (file) => {
                         return `/mediapipe/face_mesh/${file}`;
                     },

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Hands } from '@mediapipe/hands';
+import * as mpHands from '@mediapipe/hands';
 import type { Results as HandsResults, NormalizedLandmarkList } from '@mediapipe/hands';
 import { Camera } from '@mediapipe/camera_utils';
 
@@ -65,8 +65,15 @@ export function useHandTracking(): UseHandTrackingResult {
             try {
                 setIsLoading(true);
 
+                console.log('MediaPipe Hands Import:', mpHands);
+
                 // Create MediaPipe Hands instance
-                const handsInstance = new Hands({
+                const HandsClass = mpHands.Hands || (mpHands as any).default?.Hands || (window as any).Hands;
+                if (!HandsClass) {
+                    throw new Error('Hands class not found in import');
+                }
+
+                const handsInstance = new HandsClass({
                     locateFile: (file) => {
                         const url = `/mediapipe/hands/${file}`;
                         console.log(`Loading MediaPipe file: ${url}`);
@@ -84,6 +91,9 @@ export function useHandTracking(): UseHandTrackingResult {
 
                 // Set up results callback
                 handsInstance.onResults((results: HandsResults) => {
+                    const count = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
+                    if (Math.random() < 0.05) console.log(`Results received: ${count} hands detected`);
+
                     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                         const detectedHands: HandLandmarks[] = results.multiHandLandmarks.map(
                             (landmarks, index) => ({
@@ -139,10 +149,19 @@ export function useHandTracking(): UseHandTrackingResult {
         }
 
         // Create camera utility for frame-by-frame processing
+        let frameCount = 0;
         const camera = new Camera(videoElement, {
             onFrame: async () => {
                 if (handsRef.current) {
-                    await handsRef.current.send({ image: videoElement });
+                    frameCount++;
+                    if (frameCount % 60 === 0) {
+                        console.log(`Processing frame ${frameCount}, video size: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+                    }
+                    try {
+                        await handsRef.current.send({ image: videoElement });
+                    } catch (e) {
+                        console.error("Error sending frame to Hands:", e);
+                    }
                 }
             },
             width: videoElement.videoWidth || 1280,
