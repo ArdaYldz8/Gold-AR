@@ -1,40 +1,36 @@
 /**
- * useHandTracking Hook
+ * useHandTracking Hook (MediaPipe Vision Tasks API)
  * 
- * Integrates MediaPipe Hands for hand/finger landmark detection
- * Used for positioning ring overlays on the index finger
+ * Uses the new @mediapipe/tasks-vision HandLandmarker for hand detection
+ * This is the modern API with better mobile support
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-import type { Hands, Results as HandsResults, NormalizedLandmarkList } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
+import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
 /**
  * Hand landmark indices for ring positioning
- * Reference: https://google.github.io/mediapipe/solutions/hands.html
- * 
- * Index finger landmarks:
- * - 5: INDEX_FINGER_MCP (metacarpophalangeal joint / knuckle)
- * - 6: INDEX_FINGER_PIP (proximal interphalangeal joint)
- * - 7: INDEX_FINGER_DIP (distal interphalangeal joint)
- * - 8: INDEX_FINGER_TIP
+ * Same as before - 21 landmarks per hand
  */
 export const HAND_LANDMARKS = {
-    INDEX_FINGER_MCP: 5,  // Base of index finger (knuckle)
-    INDEX_FINGER_PIP: 6,  // First joint
-    INDEX_FINGER_DIP: 7,  // Second joint
-    INDEX_FINGER_TIP: 8,  // Fingertip
-    // Middle finger (alternative for ring)
+    INDEX_FINGER_MCP: 5,
+    INDEX_FINGER_PIP: 6,
+    INDEX_FINGER_DIP: 7,
+    INDEX_FINGER_TIP: 8,
     MIDDLE_FINGER_MCP: 9,
     MIDDLE_FINGER_PIP: 10,
-    // Ring finger
     RING_FINGER_MCP: 13,
     RING_FINGER_PIP: 14,
 } as const;
 
+export interface NormalizedLandmark {
+    x: number;
+    y: number;
+    z: number;
+}
+
 export interface HandLandmarks {
-    landmarks: NormalizedLandmarkList;
+    landmarks: NormalizedLandmark[];
     handedness: 'Left' | 'Right';
 }
 
@@ -53,136 +49,117 @@ export function useHandTracking(): UseHandTrackingResult {
     const [hands, setHands] = useState<HandLandmarks[]>([]);
     const [isDetecting, setIsDetecting] = useState(false);
 
-    const handsRef = useRef<Hands | null>(null);
-    const cameraRef = useRef<Camera | null>(null);
+    const handLandmarkerRef = useRef<HandLandmarker | null>(null);
+    const videoElementRef = useRef<HTMLVideoElement | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
 
-    /**
-     * Initialize MediaPipe Hands
-     * Loads the model and sets up result handling
-     */
+    // Initialize HandLandmarker
     useEffect(() => {
-        const initHands = async () => {
+        const initHandLandmarker = async () => {
             try {
                 setIsLoading(true);
+                console.log('Initializing MediaPipe Vision Tasks HandLandmarker...');
 
-                console.log('Initializing MediaPipe Hands from global scope...');
+                // Load WASM files from CDN
+                const vision = await FilesetResolver.forVisionTasks(
+                    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
+                );
 
-                // Create MediaPipe Hands instance from global window object
-                const HandsClass = (window as any).Hands;
-
-                if (!HandsClass) {
-                    throw new Error('MediaPipe Hands library not loaded globally. Check script tags in index.html');
-                }
-
-                const handsInstance = new HandsClass({
-                    locateFile: (file: string) => {
-                        const url = `/mediapipe/hands/${file}`;
-                        console.log(`Loading MediaPipe file: ${url}`);
-                        return url;
+                // Create HandLandmarker with local model file
+                const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: '/models/hand_landmarker.task',
+                        delegate: 'GPU' // Use GPU for better performance
                     },
-                });
-
-                // Configure hand detection parameters
-                handsInstance.setOptions({
-                    maxNumHands: 2,           // Detect up to 2 hands
-                    modelComplexity: 0,       // 0=lite (faster), 1=full
-                    minDetectionConfidence: 0.5,
+                    runningMode: 'VIDEO',
+                    numHands: 2,
+                    minHandDetectionConfidence: 0.5,
+                    minHandPresenceConfidence: 0.5,
                     minTrackingConfidence: 0.5,
                 });
 
-                // Set up results callback
-                handsInstance.onResults((results: HandsResults) => {
-                    const count = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
-                    if (Math.random() < 0.05) console.log(`Results received: ${count} hands detected`);
-
-                    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                        const detectedHands: HandLandmarks[] = results.multiHandLandmarks.map(
-                            (landmarks, index) => ({
-                                landmarks,
-                                handedness: (results.multiHandedness?.[index]?.label as 'Left' | 'Right') || 'Right',
-                            })
-                        );
-                        setHands(detectedHands);
-                        setIsDetecting(true);
-                    } else {
-                        setHands([]);
-                        setIsDetecting(false);
-                    }
-                });
-
-                handsRef.current = handsInstance;
+                handLandmarkerRef.current = handLandmarker;
                 setIsLoading(false);
+                console.log('HandLandmarker initialized successfully!');
             } catch (err) {
-                console.error('Failed to initialize MediaPipe Hands:', err);
-                if (err instanceof Error) {
-                    console.error('Error details:', err.message, err.stack);
-                }
+                console.error('Failed to initialize HandLandmarker:', err);
                 setError('Failed to load hand tracking model: ' + (err instanceof Error ? err.message : String(err)));
                 setIsLoading(false);
             }
         };
 
-        console.log('Initializing Hand Tracking...');
-        initHands();
+        initHandLandmarker();
 
-        // Cleanup on unmount
         return () => {
-            if (cameraRef.current) {
-                cameraRef.current.stop();
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
             }
-            handsRef.current = null;
+            if (handLandmarkerRef.current) {
+                handLandmarkerRef.current.close();
+            }
         };
     }, []);
 
-    /**
-     * Start hand tracking on a video element
-     * Uses MediaPipe Camera utility for frame processing
-     */
+    // Process video frames
+    const processFrame = useCallback(() => {
+        const video = videoElementRef.current;
+        const handLandmarker = handLandmarkerRef.current;
+
+        if (!video || !handLandmarker || video.readyState < 2) {
+            animationFrameRef.current = requestAnimationFrame(processFrame);
+            return;
+        }
+
+        try {
+            const results = handLandmarker.detectForVideo(video, performance.now());
+
+            if (results.landmarks && results.landmarks.length > 0) {
+                const detectedHands: HandLandmarks[] = results.landmarks.map(
+                    (landmarks, index) => ({
+                        landmarks: landmarks as NormalizedLandmark[],
+                        handedness: (results.handednesses?.[index]?.[0]?.categoryName as 'Left' | 'Right') || 'Right',
+                    })
+                );
+                setHands(detectedHands);
+                setIsDetecting(true);
+            } else {
+                setHands([]);
+                setIsDetecting(false);
+            }
+        } catch (e) {
+            console.error('Error processing frame:', e);
+        }
+
+        animationFrameRef.current = requestAnimationFrame(processFrame);
+    }, []);
+
     const startTracking = useCallback((videoElement: HTMLVideoElement) => {
-        if (!handsRef.current) {
+        if (!handLandmarkerRef.current) {
             setError('Hand tracking not initialized');
             return;
         }
 
-        // Stop any existing camera
-        if (cameraRef.current) {
-            cameraRef.current.stop();
+        videoElementRef.current = videoElement;
+
+        // Stop any existing animation frame
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
         }
 
-        // Create camera utility for frame-by-frame processing
-        let frameCount = 0;
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                if (handsRef.current) {
-                    frameCount++;
-                    if (frameCount % 60 === 0) {
-                        console.log(`Processing frame ${frameCount}, video size: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-                    }
-                    try {
-                        await handsRef.current.send({ image: videoElement });
-                    } catch (e) {
-                        console.error("Error sending frame to Hands:", e);
-                    }
-                }
-            },
-            width: videoElement.videoWidth || 1280,
-            height: videoElement.videoHeight || 720,
-        });
+        // Start processing frames
+        animationFrameRef.current = requestAnimationFrame(processFrame);
+        console.log('Started hand tracking');
+    }, [processFrame]);
 
-        camera.start();
-        cameraRef.current = camera;
-    }, []);
-
-    /**
-     * Stop hand tracking
-     */
     const stopTracking = useCallback(() => {
-        if (cameraRef.current) {
-            cameraRef.current.stop();
-            cameraRef.current = null;
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
         }
+        videoElementRef.current = null;
         setHands([]);
         setIsDetecting(false);
+        console.log('Stopped hand tracking');
     }, []);
 
     return {
@@ -197,9 +174,8 @@ export function useHandTracking(): UseHandTrackingResult {
 
 /**
  * Get index finger landmarks for ring positioning
- * Returns the base and PIP joint for computing ring transform
  */
-export function getIndexFingerLandmarks(landmarks: NormalizedLandmarkList) {
+export function getIndexFingerLandmarks(landmarks: NormalizedLandmark[]) {
     return {
         base: landmarks[HAND_LANDMARKS.INDEX_FINGER_MCP],
         pip: landmarks[HAND_LANDMARKS.INDEX_FINGER_PIP],
@@ -209,9 +185,9 @@ export function getIndexFingerLandmarks(landmarks: NormalizedLandmarkList) {
 }
 
 /**
- * Get ring finger landmarks (alternative finger for ring)
+ * Get ring finger landmarks
  */
-export function getRingFingerLandmarks(landmarks: NormalizedLandmarkList) {
+export function getRingFingerLandmarks(landmarks: NormalizedLandmark[]) {
     return {
         base: landmarks[HAND_LANDMARKS.RING_FINGER_MCP],
         pip: landmarks[HAND_LANDMARKS.RING_FINGER_PIP],
