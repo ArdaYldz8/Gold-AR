@@ -2,6 +2,7 @@
   "name": "ring-fitter",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1640029074",
     "@mediapipe/drawing_utils": "^0.3.1620248257",
@@ -38,7 +39,6 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
-    ],
-    "homepage": "~juhopuur/RingFitter/build"
+    ]
   }
 }
