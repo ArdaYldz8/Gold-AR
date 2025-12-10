@@ -44,7 +44,7 @@ export const DebugConsole: React.FC = () => {
             <button
                 style={{
                     position: 'fixed',
-                    bottom: '10px',
+                    top: '10px',
                     left: '10px',
                     zIndex: 9999,
                     background: 'rgba(0,0,0,0.7)',
