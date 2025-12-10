@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as mpHands from '@mediapipe/hands';
-import type { Results as HandsResults, NormalizedLandmarkList } from '@mediapipe/hands';
+import type { Hands, Results as HandsResults, NormalizedLandmarkList } from '@mediapipe/hands';
 import { Camera } from '@mediapipe/camera_utils';
 
 /**

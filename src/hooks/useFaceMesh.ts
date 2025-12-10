@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as mpFaceMesh from '@mediapipe/face_mesh';
-import type { Results as FaceMeshResults, NormalizedLandmarkList } from '@mediapipe/face_mesh';
+import type { FaceMesh, Results as FaceMeshResults, NormalizedLandmarkList } from '@mediapipe/face_mesh';
 import { Camera } from '@mediapipe/camera_utils';
 
 /**
