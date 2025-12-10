@@ -8,8 +8,30 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CameraFeed } from './CameraFeed';
 import { useHandTracking } from '../hooks/useHandTracking';
-import ringImage from '../assets/ring_gold.png';
 import { useFaceMesh, getChinLandmarks, getEarLandmarks, getFaceWidth } from '../hooks/useFaceMesh';
+
+// SVG Ring Component - gold ring with gradient
+const GoldRingSVG = () => (
+    <svg viewBox="0 0 100 100" className="ring-svg">
+        <defs>
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: '#f5d742', stopOpacity: 1 }} />
+                <stop offset="50%" style={{ stopColor: '#d4af37', stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#b8860b', stopOpacity: 1 }} />
+            </linearGradient>
+            <linearGradient id="goldHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style={{ stopColor: '#fff5cc', stopOpacity: 0.8 }} />
+                <stop offset="100%" style={{ stopColor: '#d4af37', stopOpacity: 0 }} />
+            </linearGradient>
+        </defs>
+        {/* Outer ring */}
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#goldGradient)" strokeWidth="10" />
+        {/* Highlight */}
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#goldHighlight)" strokeWidth="3" />
+        {/* Inner shadow */}
+        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="2" />
+    </svg>
+);
 import type { Product } from '../data/products';
 import { computeTransform, normalizedToPixelCoords, radToDeg } from '../utils/geometry';
 import './ARView.css';
@@ -264,7 +286,7 @@ export const ARView: React.FC<ARViewProps> = ({ product, onBack }) => {
                         transform: `translate(-50%, -50%) rotate(${ringTransform.rotation}deg)`,
                     }}
                 >
-                    <img src={ringImage} alt="Ring" className="ring-image" />
+                    <GoldRingSVG />
                 </div>
             )}
 
