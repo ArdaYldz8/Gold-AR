@@ -1,83 +1,72 @@
-# Web AR Jewelry Try-On
+![](https://media.giphy.com/media/dx928cZiLnQe9PuIZp/giphy.gif)
 
-A browser-based Web AR virtual try-on system for gold jewelry, built with React, TypeScript, Vite, and MediaPipe.
+# Getting Started with Create React App
 
-![Demo](https://via.placeholder.com/800x400?text=Web+AR+Jewelry+Try-On+Demo)
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Features
+## Available Scripts
 
-- **Virtual Try-On**: Try on rings, necklaces, and earrings in real-time using your webcam.
-- **Hand Tracking**: Uses MediaPipe Hands to detect finger positions for accurate ring placement.
-- **Face Mesh**: Uses MediaPipe Face Mesh to detect chin and ear positions for necklaces and earrings.
-- **Responsive UI**: Modern, dark-themed interface for selecting products.
-- **In-Memory Catalog**: Extensible product list with positioning configurations.
+In the project directory, you can run:
 
-## Tech Stack
+### `npm start`
 
-- **Framework**: React + TypeScript + Vite
-- **AR/CV**: MediaPipe Hands, MediaPipe Face Mesh
-- **Testing**: Vitest
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-## Getting Started
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-### Prerequisites
+### `npm test`
 
-- Node.js (v18 or later recommended)
-- A webcam
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### Installation
+### `npm run build`
 
-1. Clone the repository (or extract the project files).
-2. Install dependencies:
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-   ```bash
-   npm install
-   ```
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-3. Start the development server:
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-   ```bash
-   npm run dev
-   ```
+### `npm run eject`
 
-4. Open your browser at `http://localhost:5173`.
-   - **Note**: Camera access requires a secure context (HTTPS) or `localhost`.
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-## Usage
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-1. **Select a Product**: Browse the catalog and click on a ring, necklace, or earring.
-2. **Start AR**: Click the "Start AR Try-On" button.
-3. **Grant Permission**: Allow camera access when prompted.
-4. **Try It On**:
-   - For **Rings**: Show your hand to the camera. The ring will appear on your index finger.
-   - For **Necklaces/Earrings**: Position your face in the frame. The jewelry will appear on your neck/ears.
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-## Adding New Products
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-To add new jewelry items:
+## Learn More
 
-1. Add your PNG image to `src/assets/`.
-2. Update `src/data/products.ts` with the new item:
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-   ```typescript
-   {
-     id: 'new-ring',
-     name: 'New Gold Ring',
-     type: 'ring',
-     image: '/assets/new-ring.png',
-     baseScale: 2.5, // Adjust size
-     offsetX: 0,     // Adjust horizontal position
-     offsetY: 0,     // Adjust vertical position
-   }
-   ```
+To learn React, check out the [React documentation](https://reactjs.org/).
 
-## Development
+### Code Splitting
 
-- **Unit Tests**: Run geometry utility tests.
-  ```bash
-  npm test
-  ```
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-## License
+### Analyzing the Bundle Size
 
-MIT
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
