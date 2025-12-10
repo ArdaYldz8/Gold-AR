@@ -76,7 +76,7 @@ export function useHandTracking(): UseHandTrackingResult {
                 // Configure hand detection parameters
                 handsInstance.setOptions({
                     maxNumHands: 2,           // Detect up to 2 hands
-                    modelComplexity: 1,       // 0=lite, 1=full (more accurate)
+                    modelComplexity: 0,       // 0=lite (faster), 1=full
                     minDetectionConfidence: 0.5,
                     minTrackingConfidence: 0.5,
                 });

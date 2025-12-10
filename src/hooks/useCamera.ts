@@ -15,6 +15,8 @@ export interface UseCameraResult {
     hasPermission: boolean;
     startCamera: () => Promise<void>;
     stopCamera: () => void;
+    facingMode: 'user' | 'environment' | undefined;
+    switchCamera: () => void;
 }
 
 export interface CameraOptions {
@@ -37,42 +39,40 @@ export function useCamera(options: CameraOptions = {}): UseCameraResult {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasPermission, setHasPermission] = useState(false);
+    const [facingMode, setFacingMode] = useState<CameraOptions['facingMode']>(mergedOptions.facingMode);
 
     /**
      * Start the camera stream
-     * Requests permission and attaches stream to video element
      */
     const startCamera = useCallback(async () => {
         setIsLoading(true);
         setError(null);
 
+        // Stop existing stream if any
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+
         try {
-            // Check if getUserMedia is supported
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 throw new Error('Camera API is not supported in this browser');
             }
 
-            // Request camera access with specified constraints
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     width: { ideal: mergedOptions.width },
                     height: { ideal: mergedOptions.height },
-                    facingMode: mergedOptions.facingMode,
+                    facingMode: facingMode,
                 },
-                audio: false, // We don't need audio for AR try-on
+                audio: false,
             });
 
-            // Attach stream to video element
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
-
-                // Wait for video metadata to load before playing
                 await new Promise<void>((resolve, reject) => {
                     if (videoRef.current) {
                         videoRef.current.onloadedmetadata = () => {
-                            videoRef.current?.play()
-                                .then(() => resolve())
-                                .catch(reject);
+                            videoRef.current?.play().then(() => resolve()).catch(reject);
                         };
                     }
                 });
@@ -81,32 +81,32 @@ export function useCamera(options: CameraOptions = {}): UseCameraResult {
             setStream(mediaStream);
             setHasPermission(true);
         } catch (err) {
-            // Handle specific error types
             if (err instanceof Error) {
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    setError('Camera access denied. Please allow camera permission to use AR try-on.');
-                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                    setError('No camera found. Please connect a camera and try again.');
-                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                    setError('Camera is in use by another application. Please close other apps using the camera.');
-                } else if (err.name === 'OverconstrainedError') {
-                    setError('Camera does not support the required resolution.');
-                } else {
-                    setError(err.message || 'Failed to access camera');
-                }
+                setError(err.message || 'Failed to access camera');
             } else {
-                setError('An unknown error occurred while accessing the camera');
+                setError('An unknown error occurred');
             }
             setHasPermission(false);
         } finally {
             setIsLoading(false);
         }
-    }, [mergedOptions.width, mergedOptions.height, mergedOptions.facingMode]);
+    }, [mergedOptions.width, mergedOptions.height, facingMode]);
 
     /**
-     * Stop the camera stream
-     * Releases all tracks and cleans up resources
+     * Switch between front and back camera
      */
+    const switchCamera = useCallback(() => {
+        setFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
+    }, []);
+
+    // Update dependencies for startCamera to include facingMode changes
+    useEffect(() => {
+        // Only restart if we already have permission or attempted to start
+        if (hasPermission || error) {
+            startCamera();
+        }
+    }, [facingMode]);
+
     const stopCamera = useCallback(() => {
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
@@ -118,7 +118,6 @@ export function useCamera(options: CameraOptions = {}): UseCameraResult {
         setHasPermission(false);
     }, [stream]);
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (stream) {
@@ -135,5 +134,7 @@ export function useCamera(options: CameraOptions = {}): UseCameraResult {
         hasPermission,
         startCamera,
         stopCamera,
+        facingMode,
+        switchCamera
     };
 }

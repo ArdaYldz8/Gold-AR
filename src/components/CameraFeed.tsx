@@ -12,6 +12,8 @@ import './CameraFeed.css';
 interface CameraFeedProps {
     onVideoReady?: (video: HTMLVideoElement) => void;
     onError?: (error: string) => void;
+    onSwitchCamera?: () => void;
+    facingMode?: 'user' | 'environment';
 }
 
 export const CameraFeed: React.FC<CameraFeedProps> = ({
@@ -24,6 +26,8 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({
         error,
         hasPermission,
         startCamera,
+        switchCamera,
+        facingMode
     } = useCamera({
         width: 1280,
         height: 720,
@@ -89,11 +93,22 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({
             {/* Video Element */}
             <video
                 ref={videoRef}
-                className={`camera-video ${hasPermission ? 'visible' : ''}`}
+                className={`camera-video ${hasPermission ? 'visible' : ''} ${facingMode === 'environment' ? 'no-mirror' : ''}`}
                 playsInline
                 muted
                 autoPlay
             />
+
+            {/* Camera Switch Button */}
+            {hasPermission && (
+                <button
+                    className="switch-camera-btn"
+                    onClick={switchCamera}
+                    aria-label="Switch Camera"
+                >
+                    🔄
+                </button>
+            )}
         </div>
     );
 };
