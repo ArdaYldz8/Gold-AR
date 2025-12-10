@@ -7,7 +7,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CameraFeed } from './CameraFeed';
-import { useHandTracking, getIndexFingerLandmarks } from '../hooks/useHandTracking';
+import { useHandTracking } from '../hooks/useHandTracking';
+import ringImage from '../assets/ring_gold.png';
 import { useFaceMesh, getChinLandmarks, getEarLandmarks, getFaceWidth } from '../hooks/useFaceMesh';
 import type { Product } from '../data/products';
 import { computeTransform, normalizedToPixelCoords, radToDeg } from '../utils/geometry';
@@ -76,11 +77,13 @@ export const ARView: React.FC<ARViewProps> = ({ product, onBack }) => {
         // Ring positioning from hand tracking
         if (product.type === 'ring' && handTracking.hands.length > 0) {
             const hand = handTracking.hands[0];
-            const fingerLandmarks = getIndexFingerLandmarks(hand.landmarks);
+            // Use RING finger landmarks (13=MCP, 14=PIP) instead of index finger
+            const ringFingerBase = hand.landmarks[13]; // RING_FINGER_MCP
+            const ringFingerPip = hand.landmarks[14];  // RING_FINGER_PIP
 
             // Use base and PIP joint for ring positioning
-            const p1 = { x: fingerLandmarks.base.x, y: fingerLandmarks.base.y };
-            const p2 = { x: fingerLandmarks.pip.x, y: fingerLandmarks.pip.y };
+            const p1 = { x: ringFingerBase.x, y: ringFingerBase.y };
+            const p2 = { x: ringFingerPip.x, y: ringFingerPip.y };
 
             const transform = computeTransform(p1, p2);
 
@@ -261,7 +264,7 @@ export const ARView: React.FC<ARViewProps> = ({ product, onBack }) => {
                         transform: `translate(-50%, -50%) rotate(${ringTransform.rotation}deg)`,
                     }}
                 >
-                    <div className="overlay-placeholder ring-placeholder">💍</div>
+                    <img src={ringImage} alt="Ring" className="ring-image" />
                 </div>
             )}
 
