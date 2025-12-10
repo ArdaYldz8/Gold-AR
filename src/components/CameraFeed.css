@@ -1,0 +1,104 @@
+/* CameraFeed Component Styles */
+
+.camera-feed {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Video Element */
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Mirror the video for selfie view */
+    transform: scaleX(-1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.camera-video.visible {
+    opacity: 1;
+}
+
+/* Loading State */
+.camera-loading {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: #ffffff;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(212, 175, 55, 0.3);
+    border-top-color: #d4af37;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.camera-loading p {
+    font-size: 1rem;
+    color: #a0a0a0;
+}
+
+/* Error State */
+.camera-error {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    max-width: 400px;
+}
+
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.camera-error h3 {
+    color: #ffffff;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.camera-error p {
+    color: #a0a0a0;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.retry-btn {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #d4af37 0%, #b8962d 100%);
+    border: none;
+    border-radius: 50px;
+    color: #1a1a2e;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+}
