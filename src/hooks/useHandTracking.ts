@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import * as mpHands from '@mediapipe/hands';
+
 import type { Hands, Results as HandsResults, NormalizedLandmarkList } from '@mediapipe/hands';
 import { Camera } from '@mediapipe/camera_utils';
 
@@ -65,12 +65,13 @@ export function useHandTracking(): UseHandTrackingResult {
             try {
                 setIsLoading(true);
 
-                console.log('MediaPipe Hands Import:', mpHands);
+                console.log('Initializing MediaPipe Hands from global scope...');
 
-                // Create MediaPipe Hands instance
-                const HandsClass = mpHands.Hands || (mpHands as any).default?.Hands || (window as any).Hands;
+                // Create MediaPipe Hands instance from global window object
+                const HandsClass = (window as any).Hands;
+
                 if (!HandsClass) {
-                    throw new Error('Hands class not found in import');
+                    throw new Error('MediaPipe Hands library not loaded globally. Check script tags in index.html');
                 }
 
                 const handsInstance = new HandsClass({
