@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { JewelrySelector } from './components/JewelrySelector';
 import { ARView } from './components/ARView';
+import { DebugConsole } from './components/DebugConsole';
 import type { Product } from './data/products';
 import './App.css';
 
@@ -36,6 +37,7 @@ function App() {
           onStartAR={handleStartAR}
         />
       )}
+      <DebugConsole />
     </div>
   );
 }

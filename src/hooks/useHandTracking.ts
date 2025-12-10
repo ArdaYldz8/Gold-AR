@@ -68,7 +68,9 @@ export function useHandTracking(): UseHandTrackingResult {
                 // Create MediaPipe Hands instance
                 const handsInstance = new Hands({
                     locateFile: (file) => {
-                        return `/mediapipe/hands/${file}`;
+                        const url = `/mediapipe/hands/${file}`;
+                        console.log(`Loading MediaPipe file: ${url}`);
+                        return url;
                     },
                 });
 
@@ -101,11 +103,15 @@ export function useHandTracking(): UseHandTrackingResult {
                 setIsLoading(false);
             } catch (err) {
                 console.error('Failed to initialize MediaPipe Hands:', err);
-                setError('Failed to load hand tracking model');
+                if (err instanceof Error) {
+                    console.error('Error details:', err.message, err.stack);
+                }
+                setError('Failed to load hand tracking model: ' + (err instanceof Error ? err.message : String(err)));
                 setIsLoading(false);
             }
         };
 
+        console.log('Initializing Hand Tracking...');
         initHands();
 
         // Cleanup on unmount
