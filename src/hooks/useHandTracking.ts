@@ -75,7 +75,7 @@ export function useHandTracking(): UseHandTrackingResult {
                 }
 
                 const handsInstance = new HandsClass({
-                    locateFile: (file) => {
+                    locateFile: (file: string) => {
                         const url = `/mediapipe/hands/${file}`;
                         console.log(`Loading MediaPipe file: ${url}`);
                         return url;

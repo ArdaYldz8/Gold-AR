@@ -94,7 +94,7 @@ export function useFaceMesh(): UseFaceMeshResult {
                 }
 
                 const faceMeshInstance = new FaceMeshClass({
-                    locateFile: (file) => {
+                    locateFile: (file: string) => {
                         return `/mediapipe/face_mesh/${file}`;
                     },
                 });
