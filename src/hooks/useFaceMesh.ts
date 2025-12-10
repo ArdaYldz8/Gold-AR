@@ -87,8 +87,7 @@ export function useFaceMesh(): UseFaceMeshResult {
                 // Create MediaPipe Face Mesh instance
                 const faceMeshInstance = new FaceMesh({
                     locateFile: (file) => {
-                        // Load MediaPipe files from CDN
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                        return `/mediapipe/face_mesh/${file}`;
                     },
                 });
 

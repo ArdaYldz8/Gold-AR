@@ -68,8 +68,7 @@ export function useHandTracking(): UseHandTrackingResult {
                 // Create MediaPipe Hands instance
                 const handsInstance = new Hands({
                     locateFile: (file) => {
-                        // Load MediaPipe files from CDN
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                        return `/mediapipe/hands/${file}`;
                     },
                 });
 
